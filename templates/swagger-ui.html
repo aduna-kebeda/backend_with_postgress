@@ -1,0 +1,52 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>EthioTravel API Documentation</title>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="{% static 'drf-yasg/swagger-ui-dist/swagger-ui.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'drf-yasg/style.css' %}">
+    <style>
+        .swagger-ui .topbar {
+            background-color: #2c3e50;
+            padding: 10px 0;
+        }
+        .swagger-ui .topbar .download-url-wrapper {
+            display: none;
+        }
+        .swagger-ui .topbar .logo {
+            content: url('{% static "swagger/logo.png" %}');
+            height: 40px;
+            margin: 0 20px;
+        }
+        .swagger-ui .info .title {
+            color: #2c3e50;
+        }
+        .swagger-ui .opblock.opblock-get {
+            border-color: #3498db;
+            background: rgba(52, 152, 219, 0.1);
+        }
+        .swagger-ui .opblock.opblock-post {
+            border-color: #2ecc71;
+            background: rgba(46, 204, 113, 0.1);
+        }
+        .swagger-ui .opblock.opblock-put {
+            border-color: #f1c40f;
+            background: rgba(241, 196, 15, 0.1);
+        }
+        .swagger-ui .opblock.opblock-delete {
+            border-color: #e74c3c;
+            background: rgba(231, 76, 60, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div id="swagger-ui"></div>
+    <script src="{% static 'drf-yasg/swagger-ui-dist/swagger-ui-bundle.js' %}"></script>
+    <script src="{% static 'drf-yasg/swagger-ui-dist/swagger-ui-standalone-preset.js' %}"></script>
+    <script src="{% static 'drf-yasg/insQ.min.js' %}"></script>
+    <script src="{% static 'drf-yasg/immutable.min.js' %}"></script>
+    <script src="{% static 'drf-yasg/swagger-ui-init.js' %}"></script>
+</body>
+</html> 
