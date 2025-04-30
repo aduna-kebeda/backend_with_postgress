@@ -17,13 +17,16 @@ urlpatterns = [
     path('', include(router.urls)),
     
     # Post related endpoints
-    path('posts/featured/', BlogPostViewSet.as_view({'get': 'list'}), name='featured-posts'),
+    path('posts/featured/', BlogPostViewSet.as_view({'get': 'featured'}), name='featured-posts'),
     path('posts/my_posts/', BlogPostViewSet.as_view({'get': 'list'}), name='my-posts'),
     path('posts/<int:pk>/toggle_featured/', BlogPostViewSet.as_view({'post': 'toggle_featured'}), name='toggle-featured'),
     path('posts/<int:pk>/view/', BlogPostViewSet.as_view({'post': 'view'}), name='view-post'),
     
     # Comment related endpoints
-    path('posts/<int:post_pk>/comments/', BlogCommentViewSet.as_view({'get': 'list', 'post': 'create'}), name='post-comments'),
+    path('posts/<int:post_pk>/comments/', BlogCommentViewSet.as_view({
+        'get': 'list',
+        'post': 'create'
+    }), name='post-comments'),
     path('posts/<int:post_pk>/comments/<int:pk>/', BlogCommentViewSet.as_view({
         'get': 'retrieve',
         'put': 'update',

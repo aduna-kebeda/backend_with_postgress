@@ -172,9 +172,25 @@ class BlogCommentViewSet(viewsets.ModelViewSet):
     serializer_class = BlogCommentSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
+    def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return BlogComment.objects.none()
+        post_pk = self.kwargs.get('post_pk')
+        if post_pk:
+            return BlogComment.objects.filter(post_id=post_pk)
+        return BlogComment.objects.none()
+
+    def perform_create(self, serializer):
+        post = get_object_or_404(BlogPost, pk=self.kwargs.get('post_pk'))
+        serializer.save(post=post, author=self.request.user)
+
     @swagger_auto_schema(
         tags=['Blog'],
-        operation_description="List comments for a post"
+        operation_description="List comments for a post",
+        responses={
+            200: BlogCommentSerializer(many=True),
+            404: "Post not found"
+        }
     )
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
@@ -185,7 +201,8 @@ class BlogCommentViewSet(viewsets.ModelViewSet):
         request_body=BlogCommentSerializer,
         responses={
             201: BlogCommentSerializer,
-            400: "Bad Request"
+            400: "Bad Request",
+            404: "Post not found"
         }
     )
     def create(self, request, *args, **kwargs):
@@ -196,7 +213,7 @@ class BlogCommentViewSet(viewsets.ModelViewSet):
         operation_description="Get a specific comment",
         responses={
             200: BlogCommentSerializer,
-            404: "Not Found"
+            404: "Comment not found"
         }
     )
     def retrieve(self, request, *args, **kwargs):
@@ -209,7 +226,7 @@ class BlogCommentViewSet(viewsets.ModelViewSet):
         responses={
             200: BlogCommentSerializer,
             400: "Bad Request",
-            404: "Not Found"
+            404: "Comment not found"
         }
     )
     def update(self, request, *args, **kwargs):
@@ -222,7 +239,7 @@ class BlogCommentViewSet(viewsets.ModelViewSet):
         responses={
             200: BlogCommentSerializer,
             400: "Bad Request",
-            404: "Not Found"
+            404: "Comment not found"
         }
     )
     def partial_update(self, request, *args, **kwargs):
@@ -233,20 +250,11 @@ class BlogCommentViewSet(viewsets.ModelViewSet):
         operation_description="Delete a comment",
         responses={
             204: "No Content",
-            404: "Not Found"
+            404: "Comment not found"
         }
     )
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
-
-    def get_queryset(self):
-        if getattr(self, 'swagger_fake_view', False):
-            return BlogComment.objects.none()
-        return BlogComment.objects.filter(post_id=self.kwargs.get('post_pk'))
-
-    def perform_create(self, serializer):
-        post = get_object_or_404(BlogPost, pk=self.kwargs.get('post_pk'))
-        serializer.save(post=post, author=self.request.user)
 
     @swagger_auto_schema(
         tags=['Blog'],
@@ -261,7 +269,7 @@ class BlogCommentViewSet(viewsets.ModelViewSet):
                     }
                 )
             ),
-            404: "Not Found"
+            404: "Comment not found"
         }
     )
     @action(detail=True, methods=['post'])
@@ -284,7 +292,7 @@ class BlogCommentViewSet(viewsets.ModelViewSet):
                     }
                 )
             ),
-            404: "Not Found"
+            404: "Comment not found"
         }
     )
     @action(detail=True, methods=['post'])
