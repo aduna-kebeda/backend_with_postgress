@@ -7,11 +7,12 @@ from django.utils import timezone
 User = get_user_model()
 
 class UserSerializer(serializers.ModelSerializer):
+    ref_name = 'BlogUserSerializer'
+    
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'first_name', 'last_name']
         read_only_fields = fields
-        ref_name = 'BlogUserSerializer'
 
 class BlogPostSerializer(serializers.ModelSerializer):
     author = UserSerializer(read_only=True)
@@ -27,24 +28,18 @@ class BlogPostSerializer(serializers.ModelSerializer):
         model = BlogPost
         fields = [
             'id', 'title', 'slug', 'excerpt', 'content', 'tags',
-            'imageUrl', 'author', 'authorName', 'authorImage',
-            'status', 'views', 'readTime', 'featured',
-            'created_at', 'updated_at'
+            'imageUrl', 'author', 'authorName', 'authorImage', 'status',
+            'views', 'readTime', 'featured', 'created_at', 'updated_at'
         ]
-        read_only_fields = ['id', 'slug', 'views', 'readTime', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'slug', 'views', 'created_at', 'updated_at']
         extra_kwargs = {
             'status': {'default': 'draft'},
             'featured': {'default': False},
             'readTime': {'required': False, 'default': 5}
         }
 
-    def validate(self, data):
-        if 'title' in data:
-            data['slug'] = slugify(data['title'])
-        return data
-
     def create(self, validated_data):
-        validated_data['author'] = self.context['request'].user
+        validated_data['slug'] = slugify(validated_data['title'])
         return super().create(validated_data)
 
 class BlogCommentSerializer(serializers.ModelSerializer):
@@ -53,10 +48,11 @@ class BlogCommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = BlogComment
         fields = [
-            'id', 'post', 'author', 'content', 'helpful',
+            'id', 'post', 'author', 'content', 'helpful_count',
             'reported', 'created_at', 'updated_at'
         ]
-        read_only_fields = ['id', 'author', 'helpful', 'reported', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'author', 'helpful_count', 'reported',
+                           'created_at', 'updated_at']
 
     def create(self, validated_data):
         validated_data['author'] = self.context['request'].user
@@ -68,8 +64,8 @@ class SavedPostSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = SavedPost
-        fields = ['id', 'user', 'post', 'created_at']
-        read_only_fields = ['id', 'user', 'created_at']
+        fields = ['id', 'user', 'post', 'saved_at']
+        read_only_fields = ['id', 'user', 'saved_at']
 
     def create(self, validated_data):
         validated_data['user'] = self.context['request'].user

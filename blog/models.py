@@ -7,33 +7,30 @@ import uuid
 User = get_user_model()
 
 class BlogPost(models.Model):
-    STATUS_CHOICES = [
+    STATUS_CHOICES = (
         ('draft', 'Draft'),
         ('published', 'Published'),
-    ]
+        ('archived', 'Archived')
+    )
 
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.AutoField(primary_key=True)
     # Basic Information
     title = models.CharField(max_length=200)
-    slug = models.SlugField(max_length=200, unique=True)
-    excerpt = models.TextField(max_length=500)
+    slug = models.SlugField(max_length=200, unique=True, blank=True)
+    excerpt = models.TextField(max_length=500, blank=True)
     content = models.TextField()
     tags = models.JSONField(default=list)
-    imageUrl = models.URLField(max_length=500, blank=True, default="https://example.com/default-image.jpg")
+    imageUrl = models.URLField(blank=True)
     
     # Author Information
-    author = models.ForeignKey(User, on_delete=models.SET_NULL, related_name='blog_posts', null=True)
-    authorName = models.CharField(max_length=200, blank=True)
-    authorImage = models.URLField(max_length=500, blank=True, null=True)
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='blog_posts')
+    authorName = models.CharField(max_length=100, blank=True)
+    authorImage = models.URLField(blank=True)
     
     # Status and Statistics
-    status = models.CharField(
-        max_length=20, 
-        choices=STATUS_CHOICES, 
-        default='draft'
-    )
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='draft')
     views = models.PositiveIntegerField(default=0)
-    readTime = models.PositiveIntegerField(default=5)
+    readTime = models.PositiveIntegerField(default=5)  # in minutes
     featured = models.BooleanField(default=False)
     
     # Timestamps
@@ -45,22 +42,22 @@ class BlogPost(models.Model):
         verbose_name = 'Blog Post'
         verbose_name_plural = 'Blog Posts'
 
+    def __str__(self):
+        return self.title
+
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.title)
         if not self.authorName and self.author:
-            self.authorName = self.author.get_full_name() or self.author.username
+            self.authorName = f"{self.author.first_name} {self.author.last_name}".strip()
         super().save(*args, **kwargs)
 
-    def __str__(self):
-        return self.title
-
 class BlogComment(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.AutoField(primary_key=True)
     post = models.ForeignKey(BlogPost, on_delete=models.CASCADE, related_name='comments')
-    author = models.ForeignKey(User, on_delete=models.SET_NULL, related_name='blog_comments', null=True)
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='blog_comments')
     content = models.TextField()
-    helpful = models.PositiveIntegerField(default=0)
+    helpful_count = models.PositiveIntegerField(default=0)
     reported = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -74,23 +71,13 @@ class BlogComment(models.Model):
         return f"Comment by {self.author.username} on {self.post.title}"
 
 class SavedPost(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.ForeignKey(
-        User, 
-        on_delete=models.SET_NULL,
-        related_name='saved_posts',
-        null=True
-    )
-    post = models.ForeignKey(
-        BlogPost,
-        on_delete=models.CASCADE,
-        related_name='saved_by'
-    )
-    created_at = models.DateTimeField(auto_now_add=True)
+    id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='saved_posts')
+    post = models.ForeignKey(BlogPost, on_delete=models.CASCADE, related_name='saved_by')
+    saved_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         unique_together = ('user', 'post')
-        ordering = ['-created_at']
         verbose_name = 'Saved Post'
         verbose_name_plural = 'Saved Posts'
 

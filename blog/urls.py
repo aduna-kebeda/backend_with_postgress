@@ -23,26 +23,19 @@ urlpatterns = [
     path('posts/<int:pk>/view/', BlogPostViewSet.as_view({'post': 'view'}), name='view-post'),
     
     # Comment related endpoints
-    path('posts/<int:post_pk>/comments/', BlogCommentViewSet.as_view({
-        'get': 'list',
-        'post': 'create'
-    }), name='post-comments'),
+    path('posts/<int:post_pk>/comments/', BlogCommentViewSet.as_view({'get': 'list', 'post': 'create'}), name='post-comments'),
     path('posts/<int:post_pk>/comments/<int:pk>/', BlogCommentViewSet.as_view({
         'get': 'retrieve',
         'put': 'update',
+        'patch': 'partial_update',
         'delete': 'destroy'
-    }), name='comment-detail'),
+    }), name='post-comment-detail'),
     path('posts/<int:post_pk>/comments/<int:pk>/report/', BlogCommentViewSet.as_view({'post': 'report'}), name='report-comment'),
     path('posts/<int:post_pk>/comments/<int:pk>/helpful/', BlogCommentViewSet.as_view({'post': 'mark_helpful'}), name='helpful-comment'),
     
     # Saved posts endpoints
-    path('posts/<int:post_pk>/saved/', SavedPostViewSet.as_view({
-        'get': 'list',
-        'post': 'create'
-    }), name='post-saved'),
-    path('posts/<int:post_pk>/saved/<int:pk>/', SavedPostViewSet.as_view({
-        'delete': 'destroy'
-    }), name='saved-detail'),
+    path('posts/<int:post_pk>/save/', SavedPostViewSet.as_view({'post': 'create'}), name='save-post'),
+    path('posts/<int:post_pk>/unsave/', SavedPostViewSet.as_view({'delete': 'destroy'}), name='unsave-post'),
     
     # Subscription endpoints (assuming you'll create these views later)
     path('subscriptions/', include([

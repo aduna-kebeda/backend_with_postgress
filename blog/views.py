@@ -19,6 +19,73 @@ class BlogPostViewSet(viewsets.ModelViewSet):
     serializer_class = BlogPostSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
+    @swagger_auto_schema(
+        tags=['Blog'],
+        operation_description="List all blog posts"
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        tags=['Blog'],
+        operation_description="Create a new blog post",
+        request_body=BlogPostSerializer,
+        responses={
+            201: BlogPostSerializer,
+            400: "Bad Request"
+        }
+    )
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        tags=['Blog'],
+        operation_description="Get a specific blog post",
+        responses={
+            200: BlogPostSerializer,
+            404: "Not Found"
+        }
+    )
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        tags=['Blog'],
+        operation_description="Update a blog post",
+        request_body=BlogPostSerializer,
+        responses={
+            200: BlogPostSerializer,
+            400: "Bad Request",
+            404: "Not Found"
+        }
+    )
+    def update(self, request, *args, **kwargs):
+        return super().update(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        tags=['Blog'],
+        operation_description="Partially update a blog post",
+        request_body=BlogPostSerializer,
+        responses={
+            200: BlogPostSerializer,
+            400: "Bad Request",
+            404: "Not Found"
+        }
+    )
+    def partial_update(self, request, *args, **kwargs):
+        return super().partial_update(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        tags=['Blog'],
+        operation_description="Delete a blog post",
+        responses={
+            204: "No Content",
+            404: "Not Found"
+        }
+    )
+    def destroy(self, request, *args, **kwargs):
+        return super().destroy(request, *args, **kwargs)
+
     def get_queryset(self):
         queryset = super().get_queryset()
         status_param = self.request.query_params.get('status', None)
@@ -43,9 +110,11 @@ class BlogPostViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user)
 
     @swagger_auto_schema(
-        tags=['Blog Posts'],
+        tags=['Blog'],
         operation_description="Get featured blog posts",
-        responses={200: BlogPostSerializer(many=True)}
+        responses={
+            200: BlogPostSerializer(many=True)
+        }
     )
     @action(detail=False, methods=['get'])
     def featured(self, request):
@@ -54,7 +123,7 @@ class BlogPostViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     @swagger_auto_schema(
-        tags=['Blog Posts'],
+        tags=['Blog'],
         operation_description="Increment post views",
         responses={
             200: openapi.Response(
@@ -77,7 +146,7 @@ class BlogPostViewSet(viewsets.ModelViewSet):
         return Response({'views': post.views})
 
     @swagger_auto_schema(
-        tags=['Blog Posts'],
+        tags=['Blog'],
         operation_description="Toggle featured status",
         responses={
             200: openapi.Response(
@@ -103,6 +172,73 @@ class BlogCommentViewSet(viewsets.ModelViewSet):
     serializer_class = BlogCommentSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
+    @swagger_auto_schema(
+        tags=['Blog'],
+        operation_description="List comments for a post"
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        tags=['Blog'],
+        operation_description="Create a new comment",
+        request_body=BlogCommentSerializer,
+        responses={
+            201: BlogCommentSerializer,
+            400: "Bad Request"
+        }
+    )
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        tags=['Blog'],
+        operation_description="Get a specific comment",
+        responses={
+            200: BlogCommentSerializer,
+            404: "Not Found"
+        }
+    )
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        tags=['Blog'],
+        operation_description="Update a comment",
+        request_body=BlogCommentSerializer,
+        responses={
+            200: BlogCommentSerializer,
+            400: "Bad Request",
+            404: "Not Found"
+        }
+    )
+    def update(self, request, *args, **kwargs):
+        return super().update(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        tags=['Blog'],
+        operation_description="Partially update a comment",
+        request_body=BlogCommentSerializer,
+        responses={
+            200: BlogCommentSerializer,
+            400: "Bad Request",
+            404: "Not Found"
+        }
+    )
+    def partial_update(self, request, *args, **kwargs):
+        return super().partial_update(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        tags=['Blog'],
+        operation_description="Delete a comment",
+        responses={
+            204: "No Content",
+            404: "Not Found"
+        }
+    )
+    def destroy(self, request, *args, **kwargs):
+        return super().destroy(request, *args, **kwargs)
+
     def get_queryset(self):
         if getattr(self, 'swagger_fake_view', False):
             return BlogComment.objects.none()
@@ -113,7 +249,7 @@ class BlogCommentViewSet(viewsets.ModelViewSet):
         serializer.save(post=post, author=self.request.user)
 
     @swagger_auto_schema(
-        tags=['Blog Comments'],
+        tags=['Blog'],
         operation_description="Mark comment as helpful",
         responses={
             200: openapi.Response(
@@ -136,7 +272,7 @@ class BlogCommentViewSet(viewsets.ModelViewSet):
         return Response({'helpful_count': comment.helpful_count})
 
     @swagger_auto_schema(
-        tags=['Blog Comments'],
+        tags=['Blog'],
         operation_description="Report a comment",
         responses={
             200: openapi.Response(
@@ -161,6 +297,36 @@ class BlogCommentViewSet(viewsets.ModelViewSet):
 class SavedPostViewSet(viewsets.ModelViewSet):
     serializer_class = SavedPostSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+    @swagger_auto_schema(
+        tags=['Blog'],
+        operation_description="List saved posts"
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        tags=['Blog'],
+        operation_description="Save a post",
+        request_body=SavedPostSerializer,
+        responses={
+            201: SavedPostSerializer,
+            400: "Bad Request"
+        }
+    )
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        tags=['Blog'],
+        operation_description="Remove a saved post",
+        responses={
+            204: "No Content",
+            404: "Not Found"
+        }
+    )
+    def destroy(self, request, *args, **kwargs):
+        return super().destroy(request, *args, **kwargs)
 
     def get_queryset(self):
         if getattr(self, 'swagger_fake_view', False):
