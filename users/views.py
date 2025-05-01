@@ -6,7 +6,9 @@ from django.shortcuts import get_object_or_404
 from django.core.mail import send_mail
 from django.conf import settings
 from django.utils import timezone
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
+from rest_framework_simplejwt.token_blacklist.models import OutstandingToken, BlacklistedToken
+from rest_framework_simplejwt.exceptions import TokenError
 import uuid
 from .models import User, UserProfile, BusinessOwnerProfile
 from .serializers import (
@@ -554,9 +556,23 @@ class UserViewSet(viewsets.ModelViewSet):
     def logout(self, request):
         try:
             refresh_token = request.data.get('refresh')
+            if not refresh_token:
+                return Response({'error': 'Refresh token is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Get the token from the database
             token = RefreshToken(refresh_token)
-            token.blacklist()
+            
+            # Get all outstanding tokens for the user
+            outstanding_tokens = OutstandingToken.objects.filter(user_id=token.payload['user_id'])
+            
+            # Blacklist all outstanding tokens
+            for outstanding_token in outstanding_tokens:
+                _, created = BlacklistedToken.objects.get_or_create(token=outstanding_token)
+            
             return Response({'message': 'Successfully logged out'})
+                
+        except TokenError:
+            return Response({'error': 'Invalid or expired token'}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
